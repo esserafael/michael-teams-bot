@@ -74,7 +74,6 @@ APP_ID = SETTINGS.app_id if SETTINGS.app_id else uuid.uuid4()
 # Create the Bot
 BOT = TeamsConversationBot(CONFIG.APP_ID, CONFIG.APP_PASSWORD)
 
-
 # Listen for incoming requests on /api/messages.
 async def messages(req: Request) -> Response:
     # Main bot message handler.

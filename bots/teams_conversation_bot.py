@@ -1,13 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-import datetime, json, os, time, requests
+import datetime, json, os, time, requests, switchers
 from botbuilder.core import CardFactory, TurnContext, MessageFactory
 from botbuilder.core.teams import TeamsActivityHandler, TeamsInfo
 from botbuilder.schema import CardAction, HeroCard, Mention, ConversationParameters, Activity, ActivityTypes
 from botbuilder.schema._connector_client_enums import ActionTypes
+from powershell import PowershellCall
 from config import DefaultConfig
 
 CONFIG = DefaultConfig()
+
+powershell = PowershellCall()
 
 class TeamsConversationBot(TeamsActivityHandler):
     def __init__(self, app_id: str, app_password: str):
@@ -25,22 +28,42 @@ class TeamsConversationBot(TeamsActivityHandler):
         ])
 
         request_query = "{}/apps/{}?staging=true&verbose=true&timezoneOffset=-180&subscription-key={}&q='{}'".format(CONFIG.LUIS_ENDPOINT, CONFIG.LUIS_APP_ID, CONFIG.LUIS_RUNTIME_KEY, turn_context.activity.text.lower())
-        response = requests.get(request_query)
+        response = requests.get(request_query).json()
 
         print(request_query)
-        print(response.json().get('topScoringIntent').get('intent'))
+        print(response.get('topScoringIntent').get('intent'))
 
-        intent = response.json().get('topScoringIntent').get('intent')
+        intent = response.get('topScoringIntent').get('intent')
 
-        if intent == 'AADConnectSyncResult':
-            await turn_context.send_activity("Você quer saber o resultado da sincronização do Office 365?")
-            #await self._send_reply(turn_context, "Você quer saber o resultado da sincronização do Office 365?")
-            return
-        
         if intent == 'Greeting':
             await self._greet_back(turn_context)
             return
 
+        if intent == 'GetServiceStatus':
+            for entity in response.get('entities'):
+                if entity.get('role') == 'TargetServer':
+                    target_server = entity.get('entity').replace(" ", "")
+                if entity.get('role') == 'ServiceName':
+                    service_name = entity.get('entity')
+                                        
+            if target_server and service_name:
+                ps_result = powershell.invoke("Get-Service {} -ComputerName {}".format(service_name, target_server))
+                if ps_result:
+                    await turn_context.send_activity("O Serviço {} está com status '{}'.".format(ps_result.get("ServiceName"), switchers.SERVICE_STATUS_SWITCHER.get(ps_result.get("Status"))))
+                else:
+                    await turn_context.send_activity("Não encontrei nada sobre o serviço '{}' no host '{}'.".format(service_name, target_server))
+                    await turn_context.send_activity("Verifique se os nomes do serviço e host estão corretos.")
+            else:
+                await turn_context.send_activity("Entendo que você precisa de informações sobre um serviço do Windows, porém preciso de mais informações.")
+                await turn_context.send_activity("Preciso do nome do serviço e nome do servidor.")
+            return
+
+        if intent == 'AADConnectSyncResult':
+            await turn_context.send_activity("Você quer saber o resultado da sincronização do Office 365?")
+            ps_result = powershell.invoke("Get-Service W32Time")
+            await turn_context.send_activity("O Serviço {} está com status '{}'.".format(ps_result.get("ServiceName"), switchers.SERVICE_STATUS_SWITCHER.get(ps_result.get("Status"))))
+            return
+        
         if turn_context.activity.text.lower() == "michael!":
             await self._show_members(turn_context)
             return
