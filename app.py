@@ -36,9 +36,18 @@ async def on_error(context: TurnContext, error: Exception):
     traceback.print_exc()
 
     # Send a message to the user
-    await context.send_activity("The bot encountered an error or bug.")
+    await context.send_activity("Pane no sistema, alguém me desconfigurou.")
     await context.send_activity(
-        "To continue to run this bot, please fix the bot source code."
+        "Aonde estão meus olhos de robô?"
+    )
+    await context.send_activity(
+        "Hahahah... bem, foi apenas um jeito de lhe informar que algo deu errado no meu algoritmo, não pude"
+    )
+    await context.send_activity(
+        "pude"
+    )
+    await context.send_activity(
+        "pude lhe responddddd"
     )
     # Send a trace activity if we're talking to the Bot Framework Emulator
     if context.activity.channel_id == "emulator":
@@ -75,6 +84,7 @@ async def messages(req: Request) -> Response:
         return Response(status=415)
 
     activity = Activity().deserialize(body)
+    #print(activity.from_property)
     auth_header = req.headers["Authorization"] if "Authorization" in req.headers else ""
 
     response = await ADAPTER.process_activity(activity, auth_header, BOT.on_turn)

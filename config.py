@@ -11,5 +11,15 @@ class DefaultConfig:
     """ Bot Configuration """
 
     PORT = 3978
-    APP_ID = os.environ.get("MicrosoftAppId", "")
-    APP_PASSWORD = os.environ.get("MicrosoftAppPassword", "")
+    APP_ID = os.environ.get("MichaelBotAppId")
+    APP_PASSWORD = os.environ.get("MichaelBotAppPassword")
+
+    LUIS_APP_ID = os.environ.get("LUIS_APP_ID")
+    if not LUIS_APP_ID:
+        raise ValueError("Need to define LUIS_APP_ID environment variable")
+
+    LUIS_RUNTIME_KEY = os.environ.get("LUIS_RUNTIME_KEY")
+    if not LUIS_RUNTIME_KEY:
+        raise ValueError("Need to define LUIS_RUNTIME_KEY environment variable")
+
+    LUIS_ENDPOINT = "https://westus.api.cognitive.microsoft.com/luis/v2.0"

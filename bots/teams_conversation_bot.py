@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-
+import datetime, json, os, time, requests
 from botbuilder.core import CardFactory, TurnContext, MessageFactory
 from botbuilder.core.teams import TeamsActivityHandler, TeamsInfo
 from botbuilder.schema import CardAction, HeroCard, Mention, ConversationParameters, Activity, ActivityTypes
 from botbuilder.schema._connector_client_enums import ActionTypes
+from config import DefaultConfig
 
-
+CONFIG = DefaultConfig()
 
 class TeamsConversationBot(TeamsActivityHandler):
     def __init__(self, app_id: str, app_password: str):
@@ -23,8 +24,20 @@ class TeamsConversationBot(TeamsActivityHandler):
                 )
         ])
 
-        if turn_context.activity.text.lower() == "olá" or turn_context.activity.text.lower() == "boa tarde" or turn_context.activity.text.lower() == "bom dia":
-            await self._mention_activity(turn_context)
+        request_query = "{}/apps/{}?staging=true&verbose=true&timezoneOffset=-180&subscription-key={}&q='{}'".format(CONFIG.LUIS_ENDPOINT, CONFIG.LUIS_APP_ID, CONFIG.LUIS_RUNTIME_KEY, turn_context.activity.text.lower())
+        response = requests.get(request_query)
+
+        print(request_query)
+        print(response.json().get('topScoringIntent').get('intent'))
+
+        intent = response.json().get('topScoringIntent').get('intent')
+
+        if intent == 'AADConnectSyncResult':
+            await self._send_reply(turn_context, "Você quer saber o resultado da sincronização do Office 365?")
+            return
+        
+        if intent == 'Greeting':
+            await self._greet_back(turn_context)
             return
 
         if turn_context.activity.text.lower() == "michael!":
@@ -59,6 +72,21 @@ class TeamsConversationBot(TeamsActivityHandler):
             MessageFactory.attachment(CardFactory.hero_card(card))
         )
         return
+    
+    async def _send_reply(self, turn_context: TurnContext, reply):
+        reply_activity = MessageFactory.text(f"{reply}")
+        await turn_context.send_activity(reply_activity)
+    
+    async def _greet_back(self, turn_context: TurnContext):
+        mention = Mention(
+            mentioned=turn_context.activity.from_property,
+            text=f"<at>{turn_context.activity.from_property.name}</at>",
+            type="mention",
+        )
+
+        reply_activity = MessageFactory.text(f"Olá {mention.text}")
+        reply_activity.entities = [Mention().deserialize(mention.serialize())]
+        await turn_context.send_activity(reply_activity)
 
     async def _mention_activity(self, turn_context: TurnContext):
         mention = Mention(
