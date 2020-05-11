@@ -33,7 +33,8 @@ class TeamsConversationBot(TeamsActivityHandler):
         intent = response.json().get('topScoringIntent').get('intent')
 
         if intent == 'AADConnectSyncResult':
-            await self._send_reply(turn_context, "Você quer saber o resultado da sincronização do Office 365?")
+            await turn_context.send_activity("Você quer saber o resultado da sincronização do Office 365?")
+            #await self._send_reply(turn_context, "Você quer saber o resultado da sincronização do Office 365?")
             return
         
         if intent == 'Greeting':
@@ -73,10 +74,6 @@ class TeamsConversationBot(TeamsActivityHandler):
         )
         return
     
-    async def _send_reply(self, turn_context: TurnContext, reply):
-        reply_activity = MessageFactory.text(f"{reply}")
-        await turn_context.send_activity(reply_activity)
-    
     async def _greet_back(self, turn_context: TurnContext):
         mention = Mention(
             mentioned=turn_context.activity.from_property,
@@ -85,17 +82,6 @@ class TeamsConversationBot(TeamsActivityHandler):
         )
 
         reply_activity = MessageFactory.text(f"Olá {mention.text}")
-        reply_activity.entities = [Mention().deserialize(mention.serialize())]
-        await turn_context.send_activity(reply_activity)
-
-    async def _mention_activity(self, turn_context: TurnContext):
-        mention = Mention(
-            mentioned=turn_context.activity.from_property,
-            text=f"<at>{turn_context.activity.from_property.name}</at>",
-            type="mention",
-        )
-
-        reply_activity = MessageFactory.text(f"{turn_context.activity.text} {mention.text}")
         reply_activity.entities = [Mention().deserialize(mention.serialize())]
         await turn_context.send_activity(reply_activity)
 
