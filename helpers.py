@@ -57,10 +57,10 @@ def request_ps_expression(request_targ, request_expr, request_reqi, request_reqn
     return json.loads(result[0])
 
 
-server = 'sqlserver.grupouniasselvi.local'
-database = 'Bots'
-username = 'bots-michaelscott'
-password = 'Xunda33..'
+server = ''
+database = ''
+username = ''
+password = ''
 driver= '{ODBC Driver 17 for SQL Server}'
 
 #request_id = str(uuid.uuid4())

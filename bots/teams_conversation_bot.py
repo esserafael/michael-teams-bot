@@ -211,3 +211,4 @@ class TeamsConversationBot(TeamsActivityHandler):
         print(members)
         reply = MessageFactory.text(f"The team name is {members}. The team ID is {members.id}. The AADGroupID is {members.aad_group_id}.")
         await turn_context.send_activity(reply)
+
