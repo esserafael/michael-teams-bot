@@ -1,8 +1,9 @@
 import pyodbc
 import uuid
 import datetime
+import json
 
-def invoke_sql_insert(request_id, request_date, request_targ, request_expr, request_requ):
+def invoke_sql_insert(request_id, request_date, request_targ, request_expr, request_reqi, request_reqn):
     
     cnxn = pyodbc.connect('DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password)
     cursor = cnxn.cursor()
@@ -10,8 +11,8 @@ def invoke_sql_insert(request_id, request_date, request_targ, request_expr, requ
     try:
         cnxn.autocommit = False
         result = cursor.execute(
-                    "INSERT INTO MichaelScott (RequestID, RequestDateTime, RequestTarget, RequestExpression, RequestRequester) VALUES (?, ?, ?, ?, ?)", 
-                    request_id, request_date, request_targ, request_expr, request_requ
+                    "INSERT INTO MichaelScott (RequestID, RequestDateTime, RequestTarget, RequestExpression, RequestRequesterAadObjectId, RequestRequesterName) VALUES (?, ?, ?, ?, ?, ?)", 
+                    request_id, request_date, request_targ, request_expr, request_reqi, request_reqn
                 )        
         #row = cursor.fetchone()
         #while row:
@@ -19,15 +20,14 @@ def invoke_sql_insert(request_id, request_date, request_targ, request_expr, requ
         #    row = cursor.fetchone()
     except pyodbc.DatabaseError as err:
         print(err)
-        cnxn.rollback()
-        cnxn.close()
+        cnxn.rollback()        
         return err
     else:
         cnxn.commit()
     finally:
         cnxn.autocommit = True
+        cnxn.close()
     
-    cnxn.close()
     return result.rowcount
 
 def invoke_sql_query(request_id):
@@ -44,23 +44,23 @@ def invoke_sql_query(request_id):
     cnxn.close()
     return row
 
-def request_ps_expression(request_targ, request_expr, request_requ):
+def request_ps_expression(request_targ, request_expr, request_reqi, request_reqn):
     request_id = str(uuid.uuid4())
     request_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    row_count = invoke_sql_insert(request_id, request_date, request_targ, request_expr, request_requ)
+    row_count = invoke_sql_insert(request_id, request_date, request_targ, request_expr, request_reqi, request_reqn)
     if row_count:
-        result = invoke_sql_query(request_id)[0]
-        while result == None:
-            result = invoke_sql_query(request_id)[0]
+        result = invoke_sql_query(request_id)
+        while result[0] == None:
+            result = invoke_sql_query(request_id)
 
-    return result
+    return json.loads(result[0])
 
 
-server = ''
+server = 'sqlserver.grupouniasselvi.local'
 database = 'Bots'
-username = ''
-password = ''
+username = 'bots-michaelscott'
+password = 'Xunda33..'
 driver= '{ODBC Driver 17 for SQL Server}'
 
 #request_id = str(uuid.uuid4())

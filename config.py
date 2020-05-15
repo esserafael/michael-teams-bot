@@ -11,6 +11,7 @@ class DefaultConfig:
     """ Bot Configuration """
 
     PORT = 3978
+    
     APP_ID = os.environ.get("MichaelBotAppId")
     if not APP_ID:
         raise ValueError("Need to define LUIS_APP_ID environment variable")
