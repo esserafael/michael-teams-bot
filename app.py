@@ -37,18 +37,7 @@ async def on_error(context: TurnContext, error: Exception):
 
     # Send a message to the user
     await context.send_activity("Pane no sistema, alguém me desconfigurou.")
-    await context.send_activity(
-        "Aonde estão meus olhos de robô?"
-    )
-    await context.send_activity(
-        "Hahahah... bem, foi apenas um jeito de lhe informar que algo deu errado no meu algoritmo, não pude"
-    )
-    await context.send_activity(
-        "pude"
-    )
-    await context.send_activity(
-        "pude lhe responddddd"
-    )
+
     # Send a trace activity if we're talking to the Bot Framework Emulator
     if context.activity.channel_id == "emulator":
         # Create a trace activity that contains the error object
