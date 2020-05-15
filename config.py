@@ -12,7 +12,12 @@ class DefaultConfig:
 
     PORT = 3978
     APP_ID = os.environ.get("MichaelBotAppId")
+    if not APP_ID:
+        raise ValueError("Need to define LUIS_APP_ID environment variable")
+
     APP_PASSWORD = os.environ.get("MichaelBotAppPassword")
+    if not APP_PASSWORD:
+        raise ValueError("Need to define LUIS_APP_ID environment variable")
 
     LUIS_APP_ID = os.environ.get("LUIS_APP_ID")
     if not LUIS_APP_ID:
