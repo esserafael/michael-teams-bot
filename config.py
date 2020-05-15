@@ -29,3 +29,4 @@ class DefaultConfig:
         raise ValueError("Need to define LUIS_RUNTIME_KEY environment variable")
 
     LUIS_ENDPOINT = "https://westus.api.cognitive.microsoft.com/luis/v2.0"
+
