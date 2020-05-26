@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-import uuid, datetime, json, os, time, requests, switchers
+import uuid, datetime, re, json, os, time, requests, switchers
 from botbuilder.core import CardFactory, TurnContext, MessageFactory
 from botbuilder.core.teams import TeamsActivityHandler, TeamsInfo
 from botbuilder.schema import CardAction, HeroCard, Mention, ConversationParameters, Activity, ActivityTypes
@@ -11,7 +11,7 @@ from helpers import request_ps_expression
 
 CONFIG = DefaultConfig()
 
-powershell = PowershellCall()
+#powershell = PowershellCall()
 
 class TeamsConversationBot(TeamsActivityHandler):
     def __init__(self, app_id: str, app_password: str):
@@ -54,7 +54,8 @@ class TeamsConversationBot(TeamsActivityHandler):
                 if entity.get('role') == 'ServiceName':
                     service_name = entity.get('entity')
                                         
-            if target_server and service_name:
+           #if target_server and service_name:
+            if 'target_server' in locals() and 'service_name' in locals():
 
                 request_ps_result = request_ps_expression(
                     target_server,
@@ -77,6 +78,42 @@ class TeamsConversationBot(TeamsActivityHandler):
             else:
                 await turn_context.send_activity("Entendo que você precisa de informações sobre um serviço do Windows, porém preciso de mais informações.")
                 await turn_context.send_activity("Preciso do nome do serviço e nome do servidor.")
+            return
+
+        if intent == 'GetADUserInfo':
+            target_server = "asl-ad04"
+            ps_command_tail = "-Properties DisplayName | Select Name, SamAccountName, DisplayName, UserPrincipalName, Enabled | ConvertTo-Json -Compress"
+            for entity in response.get('entities'):
+                if entity.get('role') == 'CPF':
+                    identity = re.sub(r'\.|-| ', '', entity.get('entity'))
+                    ps_command = f"Get-ADUser -Identity {identity} {ps_command_tail}"
+                elif entity.get('role') == 'Email':
+                    identity = re.replace(' ', '', entity.get('entity'))
+                    ps_command = f"Get-ADUser -Filter {{UserPrincipalName -eq \"{identity}\"}} {ps_command_tail}"
+            
+            if ps_command:            
+                request_ps_result = request_ps_expression(
+                        target_server,
+                        ps_command,
+                        turn_context.activity.from_property.aad_object_id,
+                        turn_context.activity.from_property.name
+                    )
+
+                if request_ps_result:
+                    await turn_context.send_activity(
+                        "SamAccountName: {} - Nome: {} - Email: {} - Habilitado: {}".format(
+                            request_ps_result.get("SamAccountName"),
+                            request_ps_result.get("DisplayName"),
+                            request_ps_result.get("UserPrincipalName"),
+                            switchers.ADUSER_ENABLED_SWITCHER.get(request_ps_result.get("Enabled"))
+                        )
+                    )
+                else:
+                        await turn_context.send_activity("Não encontrei ninguém :(")
+                        await turn_context.send_activity("Verifique se os dados estão corretos. Pode ser que eu seja incompetente também.")
+            else:
+                await turn_context.send_activity("Entendo que você gostaria de buscar por uma pessoa no AD, porém não consegui identificar as informações dela.")
+                await turn_context.send_activity("Preciso de um CPF, Nome ou E-mail.")
             return
 
         if intent == 'AADConnectSyncResult':
