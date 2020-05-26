@@ -3,9 +3,15 @@ import uuid
 import datetime
 import json
 
+from config import HelpersConfig
+
+CONFIG = HelpersConfig()
+
+db_conn_str = 'DRIVER='+CONFIG.DBDRIVER+';SERVER='+CONFIG.DBSERVER+';PORT=1433;DATABASE='+CONFIG.DBNAME+';UID='+CONFIG.DBUSER+';PWD='+CONFIG.DBPASS
+
 def invoke_sql_insert(request_id, request_date, request_targ, request_expr, request_reqi, request_reqn):
     
-    cnxn = pyodbc.connect('DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password)
+    cnxn = pyodbc.connect(db_conn_str)
     cursor = cnxn.cursor()
 
     try:
@@ -32,7 +38,7 @@ def invoke_sql_insert(request_id, request_date, request_targ, request_expr, requ
 
 def invoke_sql_query(request_id):
     
-    cnxn = pyodbc.connect('DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password)
+    cnxn = pyodbc.connect(db_conn_str)
     cursor = cnxn.cursor()
     
     result = cursor.execute(
@@ -54,14 +60,10 @@ def request_ps_expression(request_targ, request_expr, request_reqi, request_reqn
         while result[0] == None:
             result = invoke_sql_query(request_id)
 
-    return json.loads(result[0])
-
-
-server = ''
-database = ''
-username = ''
-password = ''
-driver= '{ODBC Driver 17 for SQL Server}'
+    if result[0] != '':
+        return json.loads(result[0])
+    else:
+        return result[0]
 
 #request_id = str(uuid.uuid4())
 #request_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
