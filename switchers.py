@@ -7,3 +7,8 @@ SERVICE_STATUS_SWITCHER={
     6: "Serviço pausando (SERVICE_PAUSE_PENDING)",
     7: "Pausado (SERVICE_PAUSED)"
 }
+
+ADUSER_ENABLED_SWITCHER={
+    True: "Habilitado",
+    False: "Desabilitado"
+}
