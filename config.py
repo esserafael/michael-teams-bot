@@ -30,3 +30,23 @@ class DefaultConfig:
 
     LUIS_ENDPOINT = "https://westus.api.cognitive.microsoft.com/luis/v2.0"
 
+class HelpersConfig:
+    """ Helpers Config """
+
+    DBDRIVER= "{ODBC Driver 17 for SQL Server}"
+
+    DBSERVER = os.environ.get("MichaelBotDbServer")
+    if not DBSERVER:
+        raise ValueError("Need to define MichaelBotDbServer environment variable")
+
+    DBNAME = os.environ.get("MichaelBotDbName")
+    if not DBNAME:
+        raise ValueError("Need to define MichaelBotDbName environment variable")
+
+    DBUSER = os.environ.get("MichaelBotDbUser")
+    if not DBUSER:
+        raise ValueError("Need to define MichaelBotDbUser environment variable")
+
+    DBPASS = os.environ.get("MichaelBotDbPass")
+    if not DBPASS:
+        raise ValueError("Need to define MichaelBotDbPass environment variable")
