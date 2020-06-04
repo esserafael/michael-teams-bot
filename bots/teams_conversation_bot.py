@@ -1,6 +1,12 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-import uuid, datetime, re, json, os, time, requests, switchers
+import os
+import time
+import datetime
+import re
+import json
+import uuid
+import requests
+import switchers
 from botbuilder.core import CardFactory, TurnContext, MessageFactory
 from botbuilder.core.teams import TeamsActivityHandler, TeamsInfo
 from botbuilder.schema import CardAction, HeroCard, Mention, ConversationParameters, Activity, ActivityTypes
@@ -128,10 +134,6 @@ class TeamsConversationBot(TeamsActivityHandler):
             await self._update_card_activity(turn_context)
             return
 
-        if turn_context.activity.text == "MessageAllMembers":
-            await self._message_all_members(turn_context)
-            return
-
         if turn_context.activity.text == "Delete":
             await self._delete_card_activity(turn_context)
             return
@@ -205,6 +207,8 @@ class TeamsConversationBot(TeamsActivityHandler):
             conversation_reference = TurnContext.get_conversation_reference(
                 turn_context.activity
             )
+
+            
 
             conversation_parameters = ConversationParameters(
                 is_group=False,
