@@ -57,7 +57,7 @@ def request_ps_expression(request_targ, request_expr, request_reqi, request_reqn
     row_count = invoke_sql_insert(request_id, request_date, request_targ, request_expr, request_reqi, request_reqn)
     if row_count:
         result = invoke_sql_query(request_id)
-        while result[0] == None:
+        while result[0] is None:
             result = invoke_sql_query(request_id)
 
     if result[0] != '':
@@ -75,4 +75,3 @@ def request_ps_expression(request_targ, request_expr, request_reqi, request_reqn
 
 #invoke_sql_insert(request_id, request_date, request_targ, request_expr, request_requ)
 #invoke_sql_query("85c17672-b20c-4ee4-b6d7-76c613ac0535")
-
